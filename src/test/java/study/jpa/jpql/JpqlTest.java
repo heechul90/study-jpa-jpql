@@ -289,7 +289,6 @@ public class JpqlTest {
 
     /**
      * jpql 함수
-     * @throws Exception
      */
     @Test
     public void jqplFunctionTest() throws Exception{
@@ -355,5 +354,34 @@ public class JpqlTest {
         for (Integer i : resultList7) {
             System.out.println("i = " + i);
         }
+    }
+
+    /**
+     * 경로 표현식
+     */
+    @Test
+    public void 경로_표현식() throws Exception{
+        //given
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        em.persist(teamA);
+        em.persist(teamB);
+
+        for (int i = 0; i < 10; i++) {
+            String memberName = "  member" + i;
+            em.persist(new Member(memberName, i, (i % 2 == 0 ? MemberType.USER: MemberType.ADMIN), (i % 2 == 0 ? teamA : teamB)));
+        }
+        em.flush();
+        em.clear();
+
+        //when
+        em.createQuery("select o.member.team from Order o")
+                .getResultList();
+
+        em.createQuery("select t.members from Team t")
+                .getResultList();
+
+        em.createQuery("select m.name from Team t join t.members m")
+                .getResultList();
     }
 }
