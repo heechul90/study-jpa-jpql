@@ -485,7 +485,31 @@ public class JpqlTest {
         List<Member> resultList4 = em.createQuery("select m from Member m where m.team.id = :teamId", Member.class)
                 .setParameter("teamId", 1L)
                 .getResultList();
+    }
 
+    /**
+     * 네임드 쿼리
+     */
+    @Test
+    public void namedQueryTest() throws Exception{
+        //given
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        em.persist(teamA);
+        em.persist(teamB);
 
+        for (int i = 0; i < 10; i++) {
+            String memberName = "  member" + i;
+            em.persist(new Member(memberName, i, (i % 2 == 0 ? MemberType.USER: MemberType.ADMIN), (i % 2 == 0 ? teamA : teamB)));
+        }
+        em.flush();
+        em.clear();
+        
+        //when
+        List<Member> resultList1 = em.createNamedQuery("Member.findByName", Member.class)
+                .setParameter("memberName", "member3")
+                .getResultList();
+
+        //then
     }
 }
