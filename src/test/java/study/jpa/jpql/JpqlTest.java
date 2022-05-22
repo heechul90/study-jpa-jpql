@@ -99,4 +99,29 @@ public class JpqlTest {
         List<MemberDto> resultList6 = em.createQuery("select new study.jpa.jpql.dto.MemberDto(m.name, m.age) from Member m", MemberDto.class)
                 .getResultList();
     }
+
+    @Test
+    @Rollback(value = false)
+    public void pagingTest() throws Exception{
+        //given
+        for (int i = 0; i < 100; i++) {
+            String memberName = "member" + i;
+            em.persist(new Member(memberName, i));
+        }
+        em.flush();
+        em.clear();
+
+        //when
+        List<Member> resultList = em.createQuery("select m from Member m order by m.age desc", Member.class)
+                .setFirstResult(0)
+                .setMaxResults(10)
+                .getResultList();
+        for (Member member : resultList) {
+            System.out.println("member.getName() = " + member.getName());
+            System.out.println("member.getAge() = " + member.getAge());
+        }
+        assertThat(resultList.size()).isEqualTo(10);
+
+        //then
+    }
 }
