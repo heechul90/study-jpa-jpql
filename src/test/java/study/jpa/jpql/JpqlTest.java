@@ -286,4 +286,74 @@ public class JpqlTest {
             System.out.println("s = " + s);
         }
     }
+
+    /**
+     * jpql 함수
+     * @throws Exception
+     */
+    @Test
+    public void jqplFunctionTest() throws Exception{
+        //given
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        em.persist(teamA);
+        em.persist(teamB);
+
+        for (int i = 0; i < 10; i++) {
+            String memberName = "  member" + i;
+            em.persist(new Member(memberName, i, (i % 2 == 0 ? MemberType.USER: MemberType.ADMIN), (i % 2 == 0 ? teamA : teamB)));
+        }
+        em.flush();
+        em.clear();
+
+        //when
+        //concat
+        List<String> resultList1 = em.createQuery("select concat('a', 'b') from Member m", String.class)
+                .getResultList();
+        for (String s : resultList1) {
+            System.out.println("s = " + s);
+        }
+
+        //substring
+        List<String> resultList2 = em.createQuery("select substring(m.name, 2, 5) from Member m", String.class)
+                .getResultList();
+        for (String s : resultList2) {
+            System.out.println("s = " + s);
+        }
+
+        //trim
+        List<String> resultList3 = em.createQuery("select trim(m.name) from Member m", String.class)
+                .getResultList();
+        for (String s : resultList3) {
+            System.out.println("s = " + s);
+        }
+
+        //lower, upper
+        List<String> resultList4 = em.createQuery("select upper(m.name) from Member m", String.class)
+                .getResultList();
+        for (String s : resultList4) {
+            System.out.println("s = " + s);
+        }
+
+        //lower, upper
+        List<Integer> resultList5 = em.createQuery("select length(m.name) from Member m", Integer.class)
+                .getResultList();
+        for (Integer i : resultList5) {
+            System.out.println("i = " + i);
+        }
+
+        //locate
+        List<Integer> resultList6 = em.createQuery("select locate('de', 'abcdefg') from Member m", Integer.class)
+                .getResultList();
+        for (Integer i : resultList6) {
+            System.out.println("i = " + i);
+        }
+
+        //locate
+        List<Integer> resultList7 = em.createQuery("select size(t.members) from Team t", Integer.class)
+                .getResultList();
+        for (Integer i : resultList7) {
+            System.out.println("i = " + i);
+        }
+    }
 }
