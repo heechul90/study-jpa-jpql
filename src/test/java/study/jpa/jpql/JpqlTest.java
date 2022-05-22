@@ -509,7 +509,31 @@ public class JpqlTest {
         List<Member> resultList1 = em.createNamedQuery("Member.findByName", Member.class)
                 .setParameter("memberName", "member3")
                 .getResultList();
+    }
 
-        //then
+    /**
+     * 벌크 연산
+     */
+    @Test
+    public void bulkQueryTest() throws Exception{
+        //given
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        em.persist(teamA);
+        em.persist(teamB);
+
+        for (int i = 0; i < 10; i++) {
+            String memberName = "  member" + i;
+            em.persist(new Member(memberName, i, (i % 2 == 0 ? MemberType.USER: MemberType.ADMIN), (i % 2 == 0 ? teamA : teamB)));
+        }
+
+        //when
+        //벌크 연산이 자동으로 flush 된다.
+        int resultCount = em.createQuery("update Member m set m.age = 20")
+                .executeUpdate();
+
+        em.clear();
+        Member findMember = em.find(Member.class, 5L);
+        System.out.println("findMember.getAge() = " + findMember.getAge());
     }
 }
