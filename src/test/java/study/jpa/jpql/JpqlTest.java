@@ -7,6 +7,7 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import study.jpa.jpql.domain.Address;
 import study.jpa.jpql.domain.Member;
+import study.jpa.jpql.domain.MemberType;
 import study.jpa.jpql.domain.Team;
 import study.jpa.jpql.dto.MemberDto;
 
@@ -204,5 +205,35 @@ public class JpqlTest {
 
         List<Member> resultList3 = em.createQuery("select m from Member m where (select count(o) from Order o where m = o.member) > 0", Member.class)
                 .getResultList();
+    }
+
+    /**
+     * JPQL 타입 표현과 기타식
+     * @throws Exception
+     */
+    @Test
+    public void jpqlTypeTest() throws Exception{
+        //given
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        em.persist(teamA);
+        em.persist(teamB);
+
+        for (int i = 0; i < 10; i++) {
+            String memberName = "member" + i;
+            em.persist(new Member(memberName, i, (i % 2 == 0 ? MemberType.USER: MemberType.ADMIN), (i % 2 == 0 ? teamA : teamB)));
+        }
+        em.flush();
+        em.clear();
+        
+        //when
+        List<Object[]> resultList1 = em.createQuery("select m.name, 'hello', true, m.type from Member m" +
+                        " where m.type = study.jpa.jpql.domain.MemberType.ADMIN")
+                .getResultList();
+        Object[] result = resultList1.get(0);
+        System.out.println("result[0] = " + result[0]);
+        System.out.println("result[1] = " + result[1]);
+        System.out.println("result[2] = " + result[2]);
+        System.out.println("result[3] = " + result[3]);
     }
 }
