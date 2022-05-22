@@ -384,4 +384,61 @@ public class JpqlTest {
         em.createQuery("select m.name from Team t join t.members m")
                 .getResultList();
     }
+
+    @Test
+    public void fetchJoin1Test() throws Exception{
+        //given
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        em.persist(teamA);
+        em.persist(teamB);
+
+        for (int i = 0; i < 10; i++) {
+            String memberName = "  member" + i;
+            em.persist(new Member(memberName, i, (i % 2 == 0 ? MemberType.USER: MemberType.ADMIN), (i % 2 == 0 ? teamA : teamB)));
+        }
+        em.flush();
+        em.clear();
+
+        //when
+        //n+1 문제 발생
+        List<Member> resultList1 = em.createQuery("select m from Member m", Member.class)
+                .getResultList();
+        for (Member member : resultList1) {
+            System.out.println("member.getName() = " + member.getName());
+            System.out.println("member.getTeam().getName() = " + member.getTeam().getName());
+        }
+        em.clear();
+
+        //fetch join(지연로딩으로 해도 fetch를 우선순위로 한방쿼리로 다 가져온다.)
+        List<Member> resultList2 = em.createQuery("select m from Member m join fetch m.team", Member.class)
+                .getResultList();
+        for (Member member : resultList2) {
+            System.out.println("member.getName() = " + member.getName());
+            System.out.println("member.getTeam().getName() = " + member.getTeam().getName());
+        }
+        em.clear();
+
+        //일대다 fetch join(결과가 뻥튀기 된다.)
+        List<Team> resultList3 = em.createQuery("select t from Team t join fetch t.members", Team.class)
+                .getResultList();
+        for (Team team : resultList3) {
+            System.out.println("team.getName() = " + team.getName());
+            for (Member member : team.getMembers()) {
+                System.out.println("member = " + member.getName());
+            }
+        }
+        em.clear();
+
+        //일대단 fetch join distinct
+        List<Team> resultList4 = em.createQuery("select distinct t from Team t join fetch t.members", Team.class)
+                .getResultList();
+        for (Team team : resultList4) {
+            System.out.println("team.getName() = " + team.getName());
+            for (Member member : team.getMembers()) {
+                System.out.println("member = " + member.getName());
+            }
+        }
+        em.clear();
+    }
 }
