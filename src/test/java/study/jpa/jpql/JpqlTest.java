@@ -441,4 +441,51 @@ public class JpqlTest {
         }
         em.clear();
     }
+
+    /**
+     * 엔티티 직접 사용
+     */
+    @Test
+    public void 엔티티_직접_사용_Test() throws Exception{
+        //given
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        em.persist(teamA);
+        em.persist(teamB);
+
+        for (int i = 0; i < 10; i++) {
+            String memberName = "  member" + i;
+            em.persist(new Member(memberName, i, (i % 2 == 0 ? MemberType.USER: MemberType.ADMIN), (i % 2 == 0 ? teamA : teamB)));
+        }
+        em.flush();
+        em.clear();
+
+        //when
+        //resultList1 == resultList2 같은 쿼리가 나간다.
+        List<Member> resultList1 = em.createQuery("select count(m) from Member m", Member.class)
+                .getResultList();
+
+        List<Member> resultList2 = em.createQuery("select count(m.id) from Member m", Member.class)
+                .getResultList();
+
+        //findMember1 == findMember2 같은 쿼리가 나간다.
+        Member findMember1 = em.createQuery("select m from Member m where m.id = :memberId", Member.class)
+                .setParameter("memberId", 1L)
+                .getSingleResult();
+
+        Member findMember2 = em.createQuery("select m from Member m where m.id = :member", Member.class)
+                .setParameter("member", new Member())
+                .getSingleResult();
+
+        //resultList3 == resultList4 같은 쿼리가 나간다.
+        List<Member> resultList3 = em.createQuery("select m from Member m where m.team = :team", Member.class)
+                .setParameter("team", teamA)
+                .getResultList();
+
+        List<Member> resultList4 = em.createQuery("select m from Member m where m.team.id = :teamId", Member.class)
+                .setParameter("teamId", 1L)
+                .getResultList();
+
+
+    }
 }
