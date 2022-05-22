@@ -61,7 +61,6 @@ public class JpqlTest {
      * 프로젝션(select)
      */
     @Test
-    @Rollback(value = false)
     public void projectionTest() throws Exception{
         //given
         Team teamA = new Team("teamA");
@@ -111,7 +110,6 @@ public class JpqlTest {
      * 페이징
      */
     @Test
-    @Rollback(value = false)
     public void pagingTest() throws Exception{
         //given
         for (int i = 0; i < 100; i++) {
@@ -139,7 +137,6 @@ public class JpqlTest {
      * 조인
      */
     @Test
-    @Rollback(value = false)
     public void joinTest() throws Exception{
         //given
         Team teamA = new Team("teamA");
@@ -181,7 +178,6 @@ public class JpqlTest {
      * 서브쿼리
      */
     @Test
-    @Rollback(value = false)
     public void subQueryTest() throws Exception{
         //given
         Team teamA = new Team("teamA");
@@ -235,5 +231,59 @@ public class JpqlTest {
         System.out.println("result[1] = " + result[1]);
         System.out.println("result[2] = " + result[2]);
         System.out.println("result[3] = " + result[3]);
+    }
+
+    /**
+     * 조건식(case 등등)
+     */
+    @Test
+    public void ConditionTest() throws Exception{
+        //given
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        em.persist(teamA);
+        em.persist(teamB);
+
+        for (int i = 0; i < 100; i++) {
+            String memberName = "member" + i;
+            em.persist(new Member(memberName, i, (i % 2 == 0 ? MemberType.USER: MemberType.ADMIN), (i % 2 == 0 ? teamA : teamB)));
+        }
+        em.flush();
+        em.clear();
+        
+        //when
+        //case
+        List<String> resultList1 = em.createQuery("select" +
+                        " case" +
+                        "    when m.age <= 20 then '학생'" +
+                        "    when m.age <= 60 then '노동자'" +
+                        "    else '노인'" +
+                        " end" +
+                        " from Member m", String.class)
+                .getResultList();
+        for (String s : resultList1) {
+            System.out.println("s = " + s);
+        }
+
+        Member findMember = em.find(Member.class, 3L);
+        findMember.changeName(null);
+
+        //coalesce
+        List<String> resultList2 = em.createQuery("select coalesce(m.name, '이름 없는 회원') from Member m", String.class)
+                .setFirstResult(0)
+                .setMaxResults(10)
+                .getResultList();
+        for (String s : resultList2) {
+            System.out.println("s = " + s);
+        }
+
+        //nullif
+        List<String> resultList3 = em.createQuery("select nullif(m.name, 'member6') from Member m", String.class)
+                .setFirstResult(0)
+                .setMaxResults(10)
+                .getResultList();
+        for (String s : resultList3) {
+            System.out.println("s = " + s);
+        }
     }
 }
