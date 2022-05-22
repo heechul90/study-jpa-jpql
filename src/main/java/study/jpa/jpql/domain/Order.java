@@ -20,6 +20,10 @@ public class Order {
 
     private int orderAmount;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
+
     @Embedded
     private Address address;
 

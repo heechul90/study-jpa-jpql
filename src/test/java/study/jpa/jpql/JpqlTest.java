@@ -175,4 +175,34 @@ public class JpqlTest {
         List<Member> resultList5 = em.createQuery("select m from Member m left join Team t on t.id = m.team.id", Member.class)
                 .getResultList();
     }
+
+    /**
+     * 서브쿼리
+     */
+    @Test
+    @Rollback(value = false)
+    public void subQueryTest() throws Exception{
+        //given
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        em.persist(teamA);
+        em.persist(teamB);
+
+        for (int i = 0; i < 10; i++) {
+            String memberName = "member" + i;
+            em.persist(new Member(memberName, i, (i % 2 == 0 ? teamA : teamB)));
+        }
+        em.flush();
+        em.clear();
+
+        //when
+        List<Object[]> resultList1 = em.createQuery("select (select avg(subm.age) from Member subm) from Member m")
+                .getResultList();
+
+        List<Member> resultList2 = em.createQuery("select m from Member m where m.age > (select avg(m2.age) from Member m2)", Member.class)
+                .getResultList();
+
+        List<Member> resultList3 = em.createQuery("select m from Member m where (select count(o) from Order o where m = o.member) > 0", Member.class)
+                .getResultList();
+    }
 }
