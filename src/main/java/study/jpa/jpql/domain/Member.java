@@ -32,4 +32,21 @@ public class Member {
         this.name = name;
         this.age = age;
     }
+
+    public Member(String name, int age, Team team) {
+        this.name = name;
+        this.age = age;
+        this.team = team;
+    }
+
+    //=== 연관관계 생성 메서드===//
+    public void addTeam(Team team) {
+        this.team = team;
+        team.getMembers().add(this);
+    }
+
+    //=== 변경 메서드===//
+    public void changeName(String memberName) {
+        this.name = memberName;
+    }
 }
