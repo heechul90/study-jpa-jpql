@@ -19,7 +19,7 @@ public class Member {
 
     private int age;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id")
     private Team team;
 
@@ -39,7 +39,7 @@ public class Member {
         this.team = team;
     }
 
-    //=== 연관관계 생성 메서드===//
+    //=== 연관관계 편의 메서드===//
     public void addTeam(Team team) {
         this.team = team;
         team.getMembers().add(this);

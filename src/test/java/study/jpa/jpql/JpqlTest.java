@@ -23,6 +23,9 @@ public class JpqlTest {
     @PersistenceContext
     EntityManager em;
 
+    /**
+     * 기본 문법과 쿼리 API
+     */
     @Test
     public void jpqlTest() throws Exception{
         //given
@@ -53,6 +56,9 @@ public class JpqlTest {
         assertThat(findMember.getName()).isEqualTo("spring1");
     }
 
+    /**
+     * 프로젝션(select)
+     */
     @Test
     @Rollback(value = false)
     public void projectionTest() throws Exception{
@@ -100,6 +106,9 @@ public class JpqlTest {
                 .getResultList();
     }
 
+    /**
+     * 페이징
+     */
     @Test
     @Rollback(value = false)
     public void pagingTest() throws Exception{
@@ -123,5 +132,47 @@ public class JpqlTest {
         assertThat(resultList.size()).isEqualTo(10);
 
         //then
+    }
+
+    /**
+     * 조인
+     */
+    @Test
+    @Rollback(value = false)
+    public void joinTest() throws Exception{
+        //given
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        em.persist(teamA);
+        em.persist(teamB);
+
+        for (int i = 0; i < 10; i++) {
+            String memberName = "member" + i;
+            em.persist(new Member(memberName, i, (i % 2 == 0 ? teamA : teamB)));
+        }
+        em.flush();
+        em.clear();
+
+        //when
+        //(inner) join
+        List<Member> resultList1 = em.createQuery("select m from Member m inner join m.team", Member.class)
+                .getResultList();
+
+        //left (outer) join
+        List<Member> resultList2 = em.createQuery("select m from Member m left outer join m.team", Member.class)
+                .getResultList();
+
+        //setter join
+        List<Member> resultList3 = em.createQuery("select m from Member m, Team t where m.name = t.name", Member.class)
+                .getResultList();
+
+        //연관관계 on 절
+        List<Member> resultList4 = em.createQuery("select m from Member m left join m.team t on t.name = :teamName", Member.class)
+                .setParameter("teamName", "teamA")
+                .getResultList();
+
+        //연관관계가 없는 on 절
+        List<Member> resultList5 = em.createQuery("select m from Member m left join Team t on t.id = m.team.id", Member.class)
+                .getResultList();
     }
 }
