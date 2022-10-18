@@ -22,4 +22,4 @@
     - Named 쿼리
     - 벌크 연산
 
-[이전으로](https://github.com/heechul90/study-jpa-basic)[다음으로](https://github.com/heechul90/study-jpa-jpashop.git)
+[[이전으로]](https://github.com/heechul90/study-jpa-basic) [[다음으로]](https://github.com/heechul90/study-jpa-jpashop.git)
